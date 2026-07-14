@@ -4,6 +4,28 @@ Open Occupation Blueprint for **ISCO-08 2612**: Judges.
 
 This repository designs a forkable OSS business for an independent arbitration and adjudication practice: a hearing-record and exhibit-handling robot manages case materials under a governor-gated actor, so the practice keeps its own adjudication records instead of renting a closed case-management SaaS. This practice offers private arbitration, mediation and adjudication services, not public judicial office.
 
+**Maturity: `:implemented`.** `src/arbitration/` implements the
+`ArbitrationActor` as a `langgraph.graph/state-graph`
+(`arbitration.actor`) wired to an `Arbitration Advisor` (`arbitration.advisor`)
+and an independent `ArbitrationGovernor` (`arbitration.governor`),
+following the itonami actor pattern (ADR-2607011000): `:intake -> :advise
+-> :govern -> :decide -+-> :commit (:ok?) +-> :request-approval (:escalate?,
+human-in-the-loop interrupt) +-> :hold (:hard?)`. 14 tests / 29 assertions
+green (`clojure -M:test`). HARD invariants (always hold, never
+overridable): client provenance, no-actuation (`:effect` must be
+`:propose`), a registered case basis for any finding proposal, the
+proposed award amount not exceeding the case's registered
+jurisdictional/agreed award ceiling (awarding beyond the case's
+registered ceiling is an ultra vires ruling, not a generous award), and
+a cleared recusal/conflict-of-interest check before any finding can be
+drafted (drafting a finding without a cleared recusal check is a
+conflict-of-interest violation, not efficient service). Always-escalate
+ops (human sign-off regardless of confidence, mapping this repo's Trust
+Controls in [`docs/business-model.md`](docs/business-model.md)):
+`:approve-binding-award-issuance` (no binding award issuance without the
+governor gate) and `:approve-case-acceptance` (accepting a case always
+requires human sign-off).
+
 ## Robotics premise
 
 All cloud-itonami verticals are designed on the premise that a **robot performs
