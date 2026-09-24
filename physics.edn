@@ -1,0 +1,33 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a hearing-record and exhibit-handling robot
+;; performs exhibit intake, transcript binding and hearing-room material
+;; organization (ISCO 2612, judges). Its physical work: carrying exhibit
+;; boxes from the intake desk to the hearing room, and setting bound
+;; transcript volumes onto the bench.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-2612"
+ :cases
+ [{:id :exhibits-to-hearing-room
+   :kind :transport
+   :procedure "AMR carries exhibit boxes from the intake desk to the hearing room"
+   :params {:mass-kg 40.0 :payload-kg 35.0 :v-max-mps 0.8 :a-max-mps2 0.4
+            :brake-decel-mps2 0.6 :drive-force-n 70.0 :crr 0.02
+            :cog-height-m 0.60 :support-half-length-m 0.25}
+   :sweep {:param :distance-m :values [20.0 40.0 60.0 80.0 110.0]}
+   :quantity :cycle-time-s
+   :limit {:max 90.0 :basis "estimate: exhibits must reach the hearing room within 90 s of being called so the hearing is not held up"}
+   :boundary {:lo 5.0 :hi 250.0}}
+  {:id :transcript-volume-to-bench
+   :kind :manipulator
+   :procedure "arm lifts a bound transcript volume from the clerk's cart up onto the raised bench"
+   :params {:l1-m 0.45 :l2-m 0.40 :m1-kg 3.5 :m2-kg 2.5
+            :from [0.55 -0.20] :to [0.35 0.55] :duration-s 2.0 :steps 500}
+   :sweep {:param :payload-kg :values [0.5 1.5 3.0 4.5 6.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 60.0 :basis "estimate: continuous shoulder torque of a light collaborative arm (~5 kg class)"}
+   :boundary {:lo 0.1 :hi 20.0}}]}
